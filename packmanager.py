@@ -51,8 +51,10 @@ class PackManager:
         """Create the list of image packes."""
 
         # Set of base names of all files in rawFolder
-        files = set([f.split('.')[0] for f in os.listdir(self._rawFolder)
-                     if os.path.isfile(os.path.join(self._rawFolder, f))])
+        files = (set([f.split('.')[0] for f in os.listdir(self._rawFolder)
+                      if os.path.isfile(os.path.join(self._rawFolder, f))]) |
+                 set([f.split('.')[0] for f in os.listdir(os.path.join(self._rawFolder, self._jpgFolder))
+                      if os.path.isfile(os.path.join(self._rawFolder, self._jpgFolder, f))]))
 
         moveablePackList = []
         discardablePackList = []
@@ -108,15 +110,16 @@ class PackManager:
             for pack, pro in zip(self._moveablePackList[border.start:border.end], proList):
                 pack.setProNumber(str(pro).zfill(d))
 
-    def process(self):
-        # Create target folders
-        os.makedirs(os.path.join(self._rawFolder, 'ready'), exist_ok=True)
-        os.makedirs(os.path.join(self._rawFolder, 'delete'), exist_ok=True)
+    def process(self, dry=False):
+        if not dry:
+            # Create target folders
+            os.makedirs(os.path.join(self._rawFolder, 'ready'), exist_ok=True)
+            os.makedirs(os.path.join(self._rawFolder, 'delete'), exist_ok=True)
 
         for pack in (self._moveablePackList +
                      self._discardablePackList):
             pack.setTargetName()
-            pack.process(self._rawFolder, self._jpgFolder)
+            pack.process(self._rawFolder, self._jpgFolder, dry=dry)
 
 
 

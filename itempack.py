@@ -36,13 +36,26 @@ class ItemPack:
         """
         self._proNumber = number
 
-    def process(self, rawFolder, jpgFolder):
+    def process(self, rawFolder, jpgFolder, dry=False):
         """Move files to target folder."""
         fileList = (glob.glob(os.path.join(rawFolder, self._baseName + '*')) +
                     glob.glob(os.path.join(rawFolder, jpgFolder, self._baseName + '*')))
 
-        for f in fileList:
-            os.renames(f, os.path.join(rawFolder, self._targetFolder, self._targetName))
+        if not dry:
+            for f in fileList:
+                ext = '.'+f.split('.', 1)[1]
+                targetFile = os.path.join(rawFolder, self._targetFolder, self._targetName+ext)
+                if not os.path.isfile(targetFile):
+                    os.replace(f, targetFile)
+                else:
+                    msg = 'File already exists\n' + targetFile + '\skipping this file'
+                    print(msg)
+        else:
+            for f in fileList:
+                ext = '.'+f.split('.', 1)[1]
+                sourceFile = os.path.basename(f).ljust(18)
+                targetFile = os.path.join(self._targetFolder, self._targetName+ext)
+                print(sourceFile + ' -> ' + targetFile)
 
 
 class MoveableItemPack(ItemPack):
